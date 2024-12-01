@@ -1,18 +1,10 @@
 defmodule Aoc2024 do
-  @moduledoc """
-  Documentation for `Aoc2024`.
-  """
+  def solve(day, part) do
+    day_input = File.read!("input/day#{day}.txt")
 
-  @doc """
-  Hello world.
+    module_name = String.to_existing_atom("Elixir.Aoc2024.Day#{day}")
+    function_name = String.to_existing_atom("solve#{part}")
 
-  ## Examples
-
-      iex> Aoc2024.hello()
-      :world
-
-  """
-  def hello do
-    :world
+    apply(module_name, function_name, [day_input])
   end
 end
