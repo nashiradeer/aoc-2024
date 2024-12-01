@@ -1,4 +1,8 @@
 defmodule Aoc2024.Day1 do
+  @doc """
+  Parses the input data into two lists of integers separating them by odd and even indexes.
+  """
+  @spec parse_input(String.t()) :: {list(integer()), list(integer())}
   def parse_input(input) do
     {l1, l2} = input
     |> String.split(" ", trim: true)
@@ -7,24 +11,32 @@ defmodule Aoc2024.Day1 do
     |> Enum.with_index()
     |> Enum.split_with(fn {_, i} -> rem(i, 2) == 0 end)
 
-    l1_task = Task.async(fn -> remove_index(l1) end)
-    l2_task = Task.async(fn -> remove_index(l2) end)
+    l2_task = Task.async(fn -> map_first_tuple_value(l2) end)
 
-    {Task.await(l1_task), Task.await(l2_task)}
+    {map_first_tuple_value(l1), Task.await(l2_task)}
   end
 
+  @doc """
+  Solves the first part of the challenge.
+  """
+  @spec solve1(String.t()) :: number()
   def solve1(data) do
     {l1, l2} = parse_input(data)
 
-    l1_task = Task.async(fn -> Enum.sort(l1) end)
     l2_task = Task.async(fn -> Enum.sort(l2) end)
 
-    Task.await(l1_task)
-    |> Enum.zip(Task.await(l2_task))
-    |> Enum.map(fn {a, b} -> difference(a, b) end)
+    {l1, l2} = {Enum.sort(l1), Task.await(l2_task)}
+
+    l1
+    |> Enum.zip(l2)
+    |> Enum.map(fn {a, b} -> distance_between(a, b) end)
     |> Enum.sum()
   end
 
+  @doc """
+  Solves the second part of the challenge.
+  """
+  @spec solve2(String.t()) :: number()
   def solve2(data) do
     {l1, l2} = parse_input(data)
 
@@ -35,15 +47,31 @@ defmodule Aoc2024.Day1 do
     |> Enum.sum()
   end
 
+  @doc """
+  Calculates the similarity between a number and its frequency.
+  """
+  @spec similarity(number(), map()) :: number()
   def similarity(x, freq) do
     freq_num = Map.get(freq, x, 0)
     x * freq_num
   end
 
-  def difference(a, b), do: force_positive(a - b)
+  @doc """
+  Calculates the distance between two numbers.
+  """
+  @spec distance_between(number(), number()) :: number()
+  def distance_between(a, b), do: force_positive(a - b)
 
+  @doc """
+  Forces a number to be positive.
+  """
+  @spec force_positive(number()) :: number()
   def force_positive(n) when n < 0, do: n * -1
   def force_positive(n), do: n
 
-  def remove_index(list), do: Enum.map(list, &elem(&1, 0))
+  @doc """
+  Maps a enumerable to its first element in each tuple of the list.
+  """
+  @spec map_first_tuple_value(Enum.t()) :: list(any())
+  def map_first_tuple_value(list), do: Enum.map(list, &elem(&1, 0))
 end
